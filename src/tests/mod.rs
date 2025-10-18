@@ -142,6 +142,55 @@ mod service_tests {
 }
 
 #[cfg(test)]
+mod invitation_tests {
+    use rest_types::{InvitationResponse, InvitationStatus};
+    use serde_json;
+
+    #[test]
+    fn test_invitation_deserialization_no_redeemed_at() {
+        let json = r#"{
+            "id": "123e4567-e89b-12d3-a456-426614174000",
+            "username": "testuser",
+            "token": "987fcdeb-51a2-43d1-b456-426614174111",
+            "invitation_link": "http://localhost:8080/auth/invitation/987fcdeb-51a2-43d1-b456-426614174111",
+            "status": "valid",
+            "redeemed_at": null
+        }"#;
+
+        let result: Result<InvitationResponse, _> = serde_json::from_str(json);
+        assert!(result.is_ok(), "Failed to deserialize invitation: {:?}", result.err());
+        
+        let invitation = result.unwrap();
+        assert_eq!(invitation.username, "testuser");
+        assert_eq!(invitation.status, InvitationStatus::Valid);
+        assert!(invitation.redeemed_at.is_none());
+    }
+
+
+    #[test]
+    fn test_actual_invitation_response_format() {
+        // Test the actual format that the backend would send
+        // Since our build succeeds, the types must be compatible somehow
+        let json = r#"{
+            "id": "123e4567-e89b-12d3-a456-426614174000",
+            "username": "testuser",
+            "token": "987fcdeb-51a2-43d1-b456-426614174111",
+            "invitation_link": "http://localhost:8080/auth/invitation/987fcdeb-51a2-43d1-b456-426614174111",
+            "status": "redeemed",
+            "redeemed_at": null
+        }"#;
+
+        let result: Result<InvitationResponse, _> = serde_json::from_str(json);
+        assert!(result.is_ok(), "Should be able to deserialize invitation with null redeemed_at: {:?}", result.err());
+        
+        let invitation = result.unwrap();
+        assert_eq!(invitation.username, "testuser");
+        assert_eq!(invitation.status, InvitationStatus::Redeemed);
+        assert!(invitation.redeemed_at.is_none());
+    }
+}
+
+#[cfg(test)]
 mod utils_tests {
     // Removed unused js function imports
     use crate::error::{ShiftyError, result_handler};

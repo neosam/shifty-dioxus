@@ -1226,7 +1226,7 @@ pub struct InvitationResponse {
     pub token: Uuid,
     pub invitation_link: String,
     pub status: InvitationStatus,
-    pub redeemed_at: Option<time::PrimitiveDateTime>,
+    pub redeemed_at: Option<time::OffsetDateTime>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, PartialEq)]
