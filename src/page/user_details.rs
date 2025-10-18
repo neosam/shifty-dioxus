@@ -9,6 +9,7 @@ use crate::{
     service::{
         user_management::{UserManagementAction, USER_MANAGEMENT_STORE},
         i18n::I18N,
+        error::ERROR_STORE,
     },
 };
 
@@ -21,6 +22,7 @@ pub struct UserDetailsProps {
 pub fn UserDetails(props: UserDetailsProps) -> Element {
     let user_management_service = use_coroutine_handle::<UserManagementAction>();
     let user_management = USER_MANAGEMENT_STORE.read().clone();
+    let error_store = ERROR_STORE.read();
     let nav = navigator();
     let i18n = I18N.read().clone();
     let mut expiration_hours = use_signal(|| "24".to_string());
@@ -139,6 +141,19 @@ pub fn UserDetails(props: UserDetailsProps) -> Element {
                             {
                                 i18n.t(Key::InvitationsCount).replace("{count}", &user_management.user_invitations.len().to_string())
                             } 
+                        }
+                    }
+
+                    // Debug information - remove after fixing the issue
+                    div { class: "mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm",
+                        p { class: "font-semibold text-blue-800", "Debug Info (remove after fixing):" }
+                        p { "User: {props.user_id}" }
+                        p { "Invitations count: {user_management.user_invitations.len()}" }
+                        p { "Loading invitations on page load: ✓" }
+                        if let Some(error) = &error_store.error {
+                            p { class: "text-red-600 font-semibold", "Error: {error}" }
+                        } else {
+                            p { class: "text-green-600", "No errors in error store" }
                         }
                     }
 
